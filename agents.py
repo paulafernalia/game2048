@@ -1,3 +1,4 @@
+from tensorflow import keras
 from keras.models import Sequential, clone_model
 from keras.optimizers import Adam
 from keras.layers import Dropout, Dense
@@ -6,22 +7,19 @@ import numpy as np
 
 class DeepQ_MLP():
 
-    def __init__(self, epsilon=.05, learning_rate=0.01, dropout=.1,
+    def __init__(self, input_shape, epsilon=.05, learning_rate=0.01, dropout=.1,
                  discount_epsilon=1., discount_factor=1., c=100, beta_1=.9,
                  warmup=50000, verbose=True):
 
         self.actions = ['D', 'U', 'L', 'R']
-        self.learning_rate = learning_rate
-        self.beta_1 = beta_1
-        self.dropout = dropout
         self.gamma = discount_factor
         self.discount_epsilon = discount_epsilon
-        self.construct_network()
-        self.update_target_network()
         self.c = c
         self.warmup = warmup
         self.verbose = verbose
         self.init_epsilon = epsilon
+        self.construct_network(input_shape, dropout, learning_rate, beta_1)
+        self.update_target_network()
         self.reset()
 
     def reset(self):
@@ -41,16 +39,16 @@ class DeepQ_MLP():
         else:
             return np.random.choice(action_list)
 
-    def construct_network(self):
+    def construct_network(self, input_shape, dropout, learning_rate, beta_1):
         """ Create multilayer perceptron """
         self.Qmodel = Sequential()
-        self.Qmodel.add(Dropout(rate=self.dropout, input_shape=(16*13,)))
+        self.Qmodel.add(Dropout(rate=dropout, input_shape=input_shape))
         self.Qmodel.add(Dense(128, activation='relu'))
-        self.Qmodel.add(Dropout(rate=self.dropout))
+        self.Qmodel.add(Dropout(rate=dropout))
         self.Qmodel.add(Dense(64, activation='relu'))
         self.Qmodel.add(Dense(len(self.actions), activation='linear'))
 
-        opt = Adam(learning_rate=self.learning_rate, beta_1=self.beta_1)
+        opt = Adam(learning_rate=learning_rate, beta_1=beta_1)
         self.Qmodel.compile(loss='mse', optimizer=opt)
 
     def update_target_network(self):
@@ -90,7 +88,6 @@ class DeepQ_MLP():
 
         # eliminate tabu values from possible actions to pick
         aval_actions = None
-
         if len(tabu) > 0:
             if randn < self.epsilon:
                 aval_actions = [a for a in self.actions if a not in tabu]
