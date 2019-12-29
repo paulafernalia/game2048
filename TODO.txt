@@ -1,0 +1,5 @@
+* Fix dynamic plotting
+* Add agent DeepQ-CNN
+* Update weights
+* save model
+* transfer main notebook to python file
