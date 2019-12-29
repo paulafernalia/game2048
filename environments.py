@@ -95,7 +95,7 @@ class Game2048():
 
         # start plot
         if self.ax is None:
-            plt.ion()
+            # plt.ion()
             self.fig, self.ax = plt.subplots(1, 1, figsize=(5, 5))
             self.ax.format_coord = lambda x, y: ''
 
@@ -142,9 +142,9 @@ class Game2048():
             spine.set_edgecolor('white')
 
         # update plot
-        self.fig.canvas.draw()
-        self.fig.canvas.flush_events()
-        time.sleep(wait)
+        # self.fig.canvas.draw()
+        # self.fig.canvas.flush_events()
+        # time.sleep(wait)
 
     def add_new_tile(self):
         """ Adds a new value in an empty tile at random.
