@@ -3,6 +3,7 @@ from keras.optimizers import Adam
 from keras.layers import Dropout, Dense, Lambda, Input
 from keras import backend as K
 import numpy as np
+import pdb
 
 
 class DeepQ_MLP():
@@ -162,6 +163,7 @@ class DeepQ_MLP():
 
         # update main network with one step of gradient descent
         # self.Qmodel.fit(X, Y, batch_size=len(X))
+        # pdb.set_trace()
         metrics = self.train_model.train_on_batch(X, Y)
 
         # every fixed number of steps, update target network
@@ -169,14 +171,16 @@ class DeepQ_MLP():
         # print(self.c_count, self.c)
 
         if self.c_count == self.c:
-            if self.verbose:
-                print('* Target network updated')
+            # if self.verbose:
+                # print('* Target network updated')
 
             # update target network to be equal the main network
             self.update_target_network()
 
             # reset counter
             self.c_count = 0
+
+        return metrics[0]
 
     def action_str2idx(self, action):
         return np.argwhere(np.array(self.actions) == action)[0][0]
@@ -198,12 +202,12 @@ class DeepQ_MLP():
                           name='loss')([y_true, y_pred, mask])
 
         train_model = Model([self.Qmodel.input] + [y_true, mask],
-                            outputs=[loss_out])
+                            outputs=[loss_out, y_pred])
 
         # loss is computed in Lambda layer
         losses = [
             lambda y_true, y_pred: y_pred,
-            # lambda y_true, y_pred: K.zeros_like(y_pred)
+            lambda y_true, y_pred: K.zeros_like(y_pred)
         ]
         opt = Adam(learning_rate=learning_rate, beta_1=beta_1)
         train_model.compile(optimizer=opt, loss=losses)
