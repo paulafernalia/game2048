@@ -1,5 +1,11 @@
-* Fix dynamic plotting
-* Add agent DeepQ-CNN
-* Update weights
+* add agent DeepQ-CNN
 * save model
-* transfer main notebook to python file
+* comment functions
+* add assertions
+* add error messages
+* ordinal encoder
+
+* update weights CHECK
+* transfer main notebook to python file CHECK
+* Fix dynamic plotting CHECK
+
