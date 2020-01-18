@@ -3,6 +3,7 @@ from collections import deque
 import numpy as np
 import cProfile
 from keras import backend as K
+import json
 
 
 class ReplayBuffer:
@@ -52,30 +53,11 @@ class ReplayBuffer:
         self.buffer.clear()
         self.count = 0
 
+def json_encode(obj):
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            obj[key] = [float(elem) for elem in obj[key]]
+    elif isinstance(obj, list):
+        obj = [float(elem) for elem in obj]
 
-def huber_loss(y_true, y_pred, clip_value):
-    # Huber loss, see https://en.wikipedia.org/wiki/Huber_loss and
-    # https://medium.com/@karpathy/yes-you-should-understand-backprop-e2f06eab496b
-    # for details.
-    assert clip_value > 0.
-
-    x = y_true - y_pred
-    if np.isinf(clip_value):
-        # Spacial case for infinity since Tensorflow does have problems
-        # if we compare `K.abs(x) < np.inf`.
-        return .5 * K.square(x)
-
-    condition = K.abs(x) < clip_value
-    squared_loss = .5 * K.square(x)
-    linear_loss = clip_value * (K.abs(x) - .5 * clip_value)
-    if K.backend() == 'tensorflow':
-        import tensorflow as tf
-        if hasattr(tf, 'select'):
-            return tf.select(condition, squared_loss, linear_loss)  # condition, true, false
-        else:
-            return tf.where(condition, squared_loss, linear_loss)  # condition, true, false
-    elif K.backend() == 'theano':
-        from theano import tensor as T
-        return T.switch(condition, squared_loss, linear_loss)
-    else:
-        raise RuntimeError('Unknown backend "{}".'.format(K.backend()))
+    return obj
